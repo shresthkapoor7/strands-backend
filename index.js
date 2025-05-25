@@ -14,7 +14,7 @@ app.use(cors({
     if (!origin || [
       'http://localhost:3000',
       'https://shresthkapoor7.github.io',
-      'https://shresthkapoor7.github.io/strands'
+      'https://www.strandschat.com',
     ].includes(origin)) {
       callback(null, true);
     } else {
