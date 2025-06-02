@@ -2,6 +2,9 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import geminiRoute from './routes/gemini.js';
+import saveChatRouter from './routes/saveChat.js';
+import getChatRouter from './routes/getChat.js';
+import getAllChatsRouter from './routes/getAllChats.js';
 
 dotenv.config();
 
@@ -27,7 +30,9 @@ app.use(cors({
 
 app.use(express.json());
 app.use('/api', geminiRoute);
-
+app.use('/api', saveChatRouter);
+app.use('/api', getChatRouter);
+app.use('/api', getAllChatsRouter);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
