@@ -7,6 +7,7 @@ import getChatRouter from './routes/getChat.js';
 import getAllChatsRouter from './routes/getAllChats.js';
 import geminiSearchRouter from './routes/geminiSearch.js';
 import chatRouter from './routes/chat.js';
+import openRouter from './routes/openRouter.js';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use('/api', getChatRouter);
 app.use('/api', getAllChatsRouter);
 app.use('/api', geminiSearchRouter);
 app.use('/api', chatRouter);
+app.use('/api', openRouter);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
