@@ -1,39 +1,33 @@
 DROP TABLE IF EXISTS resources;
 DROP TABLE IF EXISTS messages;
-DROP TABLE IF EXISTS chats;
 
 CREATE EXTENSION IF NOT EXISTS vector;
 
 
-CREATE TABLE chats (
-  id TEXT PRIMARY KEY,
-  user_id TEXT,
-  title TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
 CREATE TABLE messages (
   id SERIAL PRIMARY KEY,
-  chat_id TEXT REFERENCES chats(id),
-  message_id TEXT UNIQUE NOT NULL,
-  user_id TEXT,
-  sent_by TEXT,
+  "chatId" TEXT,
+  "messageId" UUID NOT NULL DEFAULT gen_random_uuid() UNIQUE,
+  "userId" TEXT,
+  "sentBy" SMALLINT,
   text TEXT,
-  summarized_content TEXT,
+  "summarizedContent" TEXT,
   embedding VECTOR(1536),
-  is_deleted BOOLEAN DEFAULT FALSE,
-  is_stranded BOOLEAN DEFAULT FALSE,
-  parent_message_id TEXT,
-  chat_title TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
+  "isDeleted" BOOLEAN DEFAULT FALSE,
+  "strand" BOOLEAN DEFAULT FALSE,
+  "parentMessageId" UUID,
+  "chatTitle" TEXT,
+  "createdAt" timestamptz not null default now()
 );
 
-CREATE INDEX ON messages USING ivfflat (embedding vector_cosine_ops)
+CREATE INDEX idx_messages_embedding ON messages USING ivfflat (embedding vector_cosine_ops)
 WITH (lists = 100);
 
 CREATE TABLE resources (
   id TEXT PRIMARY KEY,
-  message_id TEXT REFERENCES messages(message_id),
-  resource_url TEXT,
-  uploaded_at TIMESTAMP DEFAULT NOW()
+  "messageId" UUID REFERENCES messages("messageId"),
+  "resourceUrl" TEXT,
+  "uploadedAt" TIMESTAMP DEFAULT NOW()
 );
+
+CREATE INDEX idx_messages_chatId ON messages("chatId");

@@ -1,7 +1,16 @@
 import express from 'express';
-import supabase from './supabase.js';
+import pkg from 'pg';
+const { Pool } = pkg;
 
 const router = express.Router();
+
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_DATABASE,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
 
 router.post('/get-threads', async (req, res) => {
   const { userId } = req.body;
@@ -11,34 +20,21 @@ router.post('/get-threads', async (req, res) => {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('Messages')
-      .select('chatId, chatTitle, createdAt')
-      .eq('userId', userId)
-      .order('createdAt', { ascending: false });
+    const query = `
+      SELECT DISTINCT ON ("chatId")
+        "chatId",
+        "chatTitle",
+        "createdAt"
+      FROM messages
+      WHERE "userId" = $1
+      ORDER BY "chatId", "createdAt" DESC;
+    `;
+    const { rows } = await pool.query(query, [userId]);
 
-    if (error) {
-      console.error('Supabase fetch error:', error);
-      return res.status(500).json({ error: 'Failed to fetch threads' });
-    }
-
-    const uniqueThreadsMap = new Map();
-    for (const message of data) {
-      if (!uniqueThreadsMap.has(message.chatId)) {
-        uniqueThreadsMap.set(message.chatId, {
-          chatId: message.chatId,
-          chatTitle: message.chatTitle,
-          createdAt: message.createdAt,
-        });
-      }
-    }
-
-    const uniqueThreads = Array.from(uniqueThreadsMap.values());
-
-    res.status(200).json({ threads: uniqueThreads });
+    res.status(200).json({ threads: rows });
   } catch (err) {
-    console.error('Server error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Postgres fetch error:', err);
+    res.status(500).json({ error: 'Failed to fetch threads' });
   }
 });
 
